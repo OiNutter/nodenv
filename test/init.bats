@@ -2,6 +2,18 @@
 
 load test_helper
 
+setup() {
+  export PATH="${NODENV_TEST_DIR}/bin:$PATH"
+}
+
+create_executable() {
+  local name="$1"
+  local bin="${NODENV_TEST_DIR}/bin"
+  mkdir -p "$bin"
+  sed -Ee '1s/^ +//' > "${bin}/$name"
+  chmod +x "${bin}/$name"
+}
+
 @test "creates shims and versions directories" {
   assert [ ! -d "${NODENV_ROOT}/shims" ]
   assert [ ! -d "${NODENV_ROOT}/versions" ]
@@ -106,6 +118,24 @@ OUT
   run nodenv-init - zsh
   assert_success
   assert_line '  case "$command" in'
+}
+
+@test "outputs sh-compatible case syntax" {
+  create_executable nodenv-commands <<!
+#!$BASH
+echo -e 'rehash\nshell'
+!
+  run nodenv-init - bash
+  assert_success
+  assert_line '  rehash|shell)'
+
+  create_executable nodenv-commands <<!
+#!$BASH
+echo
+!
+  run nodenv-init - bash
+  assert_success
+  assert_line '  /)'
 }
 
 @test "outputs fish-specific syntax (fish)" {

@@ -145,7 +145,7 @@ cat <<EOS
   fi
 
   case "\$command" in
-  ${commands[*]})
+  ${commands[*]:-/})
     eval "\$(nodenv "sh-\$command" "\$@")";;
   *)
     command nodenv "\$command" "\$@";;
